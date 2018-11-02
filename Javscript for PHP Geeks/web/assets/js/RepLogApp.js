@@ -1,26 +1,35 @@
 'use strict';
 
 (function(window, $) {   
-    window.RepLogApp = {
-        initialize: function($wrapper) {
-            this.$wrapper = $wrapper;
-            Helper.initialize($wrapper);
+    window.RepLogApp = function($wrapper) {
+        this.$wrapper = $wrapper;
+        this.helper = new Helper(this.$wrapper);
 
-            this.$wrapper.find('.js-delete-rep-log').on(
-                'click',
-                    this.handleRepLogDelete.bind(this)
-            );
+        this.$wrapper.on(
+            'click',
+            '.js-delete-rep-log',
+            this.handleRepLogDelete.bind(this)
+        );
 
-            this.$wrapper.find('tbody tr').on(
-                'click',
-                this.handleRowClick.bind(this)
-            );
+        this.$wrapper.on(
+            'click',
+            'tbody tr',
+            this.handleRowClick.bind(this)
+        );
 
-        },
+        this.$wrapper.on(
+            'submit',
+            '.js-new-rep-log-form',
+            this.handleNewFormSubmit.bind(this)
+        );
+
+    };
+
+    $.extend(window.RepLogApp.prototype, {
 
         updateTotalWeightLifted: function() {
             this.$wrapper.find('.js-total-weight').html(
-                Helper.calculateTotalWeight()
+                this.helper.calculateTotalWeight()
             );
         },
 
@@ -54,16 +63,40 @@
             console.log('row clicked');
         },
 
-    };
+        handleNewFormSubmit: function(e) {
+            e.preventDefault();
+
+            var $form = $(e.currentTarget);
+            var formData = {};
+            $.each($form.serializeArray(), function(key, fieldData) {
+                formData[fieldData.name] = fieldData.value
+            });
+            $.ajax({
+                url:$form.data('url'),
+                method: 'POST',
+                data: JSON.stringify(formData),
+                success: function(data) {
+                    // todo
+                    console.log('success');
+                },
+                error: function(jqXHR) {
+                    // todo
+                    console.log('error');
+                }
+            });
+        }
+
+    });
 
     /**
      * A "private" object
      */
-    var Helper = {
-        initialize: function($wrapper) {
-            this.$wrapper = $wrapper;
-        },
 
+    var Helper = function($wrapper) {
+        this.$wrapper = $wrapper;
+    };
+
+    $.extend(Helper.prototype, {
         calculateTotalWeight: function() {
             var totalWeight = 0;
             this.$wrapper.find('tbody tr').each(function() {
@@ -72,5 +105,5 @@
 
             return totalWeight;
         }
-    };
+    });
 })(window, jQuery);
