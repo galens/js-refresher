@@ -1,9 +1,11 @@
 'use strict';
 
-(function(window, $) {   
+(function(window, $, Routing) {   
     window.RepLogApp = function($wrapper) {
         this.$wrapper = $wrapper;
         this.helper = new Helper(this.$wrapper);
+
+        this.loadRepLogs();
 
         this.$wrapper.on(
             'click',
@@ -19,13 +21,27 @@
 
         this.$wrapper.on(
             'submit',
-            '.js-new-rep-log-form',
+            this._selectors.newRepForm,
             this.handleNewFormSubmit.bind(this)
         );
 
     };
 
     $.extend(window.RepLogApp.prototype, {
+        _selectors: {
+            newRepForm: '.js-new-rep-log-form'
+        },
+
+        loadRepLogs: function() {
+            var self = this;
+            $.ajax({
+                url: Routing.generate('rep_log_list'),
+            }).then(function(data) {
+                $.each(data.items, function(key, repLog) {
+                    self._addRow(repLog);
+                });
+            });
+        },
 
         updateTotalWeightLifted: function() {
             this.$wrapper.find('.js-total-weight').html(
@@ -49,14 +65,13 @@
             var self = this;
             $.ajax({
                 url: deleteUrl,
-                method: 'DELETE',
-                success: function () {
-                    $row.fadeOut('normal', function() {
-                        $(this).remove();
-                        self.updateTotalWeightLifted();
-                    });
-                }
-            });
+                method: 'DELETE'
+            }).then(function() {
+                $row.fadeOut('normal', function() {
+                    $(this).remove();
+                    self.updateTotalWeightLifted();
+                });
+            })
         },
 
         handleRowClick: function () {
@@ -71,19 +86,71 @@
             $.each($form.serializeArray(), function(key, fieldData) {
                 formData[fieldData.name] = fieldData.value
             });
-            $.ajax({
-                url:$form.data('url'),
-                method: 'POST',
-                data: JSON.stringify(formData),
-                success: function(data) {
-                    // todo
-                    console.log('success');
-                },
-                error: function(jqXHR) {
-                    // todo
-                    console.log('error');
+            var self = this;
+            
+            this._saveRepLog(formData)
+            .then(function(data) {
+                self._clearForm();
+                self._addRow(data);
+            }).catch(function(jqXHR) {
+                if(typeof jqXHR.responseText === 'undefined') {
+                    throw jqXHR;
                 }
+                var errorData = JSON.parse(jqXHR.responseText);
+                self._mapErrorsToForm(errorData.errors);
+            }).catch(function(e) {
+                console.log(e);
             });
+        },
+
+        _saveRepLog: function(data) {
+            return $.ajax({
+                url:Routing.generate('rep_log_new'),
+                method: 'POST',
+                data: JSON.stringify(data)
+            });
+        },
+
+        _mapErrorsToForm: function(errorData) {
+            var $form = this.$wrapper.find(this._selectors.newRepForm);
+            this._removeFormErrors();
+
+            $form.find(':input').each(function() {
+                var fieldName = $(this).attr('name');
+                var $wrapper = $(this).closest('.form-group');
+                if(!errorData[fieldName]) {
+                    // no error
+                    return;
+                }
+
+                var $error = $('<span class="js-field-error help-block"></span>');
+                $error.html(errorData[fieldName]);
+                $wrapper.append($error);
+                $wrapper.addClass('has-error');
+            });
+        },
+
+        _removeFormErrors: function() {
+            var $form = this.$wrapper.find(this._selectors.newRepForm);
+            $form.find('.js-field-error').remove();
+            $form.find('.form-group').removeClass('has-error');
+        },
+
+        _clearForm: function() {
+            this._removeFormErrors();
+
+            var $form = this.$wrapper.find(this._selectors.newRepForm);
+            $form[0].reset();
+        },
+
+        _addRow: function(repLog) {
+            var tplText = $('#js-rep-log-row-template').html();
+            var tpl = _.template(tplText);
+
+            var html = tpl(repLog);
+            this.$wrapper.find('tbody')
+                .append($.parseHTML(html));
+            this.updateTotalWeightLifted();
         }
 
     });
@@ -106,4 +173,4 @@
             return totalWeight;
         }
     });
-})(window, jQuery);
+})(window, jQuery, Routing);
