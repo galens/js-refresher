@@ -1,7 +1,7 @@
 'use strict';
 
-(function(window, $, Routing, swal) {
-    window.RepLogApp = function ($wrapper) {
+(function(window, $, Routing, swal) {   
+    window.RepLogApp = function($wrapper) {
         this.$wrapper = $wrapper;
         this.helper = new Helper(this.$wrapper);
 
@@ -12,16 +12,19 @@
             '.js-delete-rep-log',
             this.handleRepLogDelete.bind(this)
         );
+
         this.$wrapper.on(
             'click',
             'tbody tr',
             this.handleRowClick.bind(this)
         );
+
         this.$wrapper.on(
             'submit',
             this._selectors.newRepForm,
             this.handleNewFormSubmit.bind(this)
         );
+
     };
 
     $.extend(window.RepLogApp.prototype, {
@@ -37,17 +40,18 @@
                 $.each(data.items, function(key, repLog) {
                     self._addRow(repLog);
                 });
-            })
+            });
         },
 
-        updateTotalWeightLifted: function () {
+        updateTotalWeightLifted: function() {
             this.$wrapper.find('.js-total-weight').html(
                 this.helper.calculateTotalWeight()
             );
         },
 
-        handleRepLogDelete: function (e) {
+        handleRepLogDelete: function(e) {
             e.preventDefault();
+            //e.stopPropagation();
 
             var $link = $(e.currentTarget);
 
@@ -60,8 +64,8 @@
                 preConfirm: function() {
                     return self._deleteRepLog($link);
                 }
-            }).catch(function(arg) {
-                // canceling is cool!
+            }).catch(function (arg) {
+                // canceling is cool
             });
         },
 
@@ -75,12 +79,11 @@
             var deleteUrl = $link.data('url');
             var $row = $link.closest('tr');
             var self = this;
-
             return $.ajax({
                 url: deleteUrl,
                 method: 'DELETE'
             }).then(function() {
-                $row.fadeOut('normal', function () {
+                $row.fadeOut('normal', function() {
                     $(this).remove();
                     self.updateTotalWeightLifted();
                 });
@@ -88,7 +91,7 @@
         },
 
         handleRowClick: function () {
-            console.log('row clicked!');
+            console.log('row clicked');
         },
 
         handleNewFormSubmit: function(e) {
@@ -100,6 +103,7 @@
                 formData[fieldData.name] = fieldData.value
             });
             var self = this;
+            
             this._saveRepLog(formData)
             .then(function(data) {
                 self._clearForm();
@@ -112,34 +116,34 @@
         _saveRepLog: function(data) {
             return new Promise(function(resolve, reject) {
                 $.ajax({
-                    url: Routing.generate('rep_log_new'),
+                    url:Routing.generate('rep_log_new'),
                     method: 'POST',
                     data: JSON.stringify(data)
                 }).then(function(data, textStatus, jqXHR) {
                     $.ajax({
                         url: jqXHR.getResponseHeader('Location')
                     }).then(function(data) {
-                        // we're finally done!
+                        // we're done
                         resolve(data);
                     });
                 }).catch(function(jqXHR) {
                     var errorData = JSON.parse(jqXHR.responseText);
-
                     reject(errorData);
                 });
             });
+            
         },
 
         _mapErrorsToForm: function(errorData) {
-            this._removeFormErrors();
             var $form = this.$wrapper.find(this._selectors.newRepForm);
+            this._removeFormErrors();
 
             $form.find(':input').each(function() {
                 var fieldName = $(this).attr('name');
                 var $wrapper = $(this).closest('.form-group');
-                if (!errorData[fieldName]) {
-                    // no error!
-                    continue;
+                if(!errorData[fieldName]) {
+                    // no error
+                    return;
                 }
 
                 var $error = $('<span class="js-field-error help-block"></span>');
@@ -167,22 +171,25 @@
             var tpl = _.template(tplText);
 
             var html = tpl(repLog);
-            this.$wrapper.find('tbody').append($.parseHTML(html));
-
+            this.$wrapper.find('tbody')
+                .append($.parseHTML(html));
             this.updateTotalWeightLifted();
         }
+
     });
 
     /**
      * A "private" object
      */
-    var Helper = function ($wrapper) {
+
+    var Helper = function($wrapper) {
         this.$wrapper = $wrapper;
     };
+
     $.extend(Helper.prototype, {
         calculateTotalWeight: function() {
             var totalWeight = 0;
-            this.$wrapper.find('tbody tr').each(function () {
+            this.$wrapper.find('tbody tr').each(function() {
                 totalWeight += $(this).data('weight');
             });
 
