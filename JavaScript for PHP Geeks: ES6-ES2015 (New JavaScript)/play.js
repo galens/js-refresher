@@ -1,4 +1,13 @@
-const favoriteFood = 'icecream';
+let foods = new Map();
+foods.set('italian', 'gelato');
+foods.set('mexican', 'torta');
+foods.set('canadian', 'poutine');
 
-const iLoveFood = `The year is ${(new Date().getFullYear())} and my favorite food is ${favoriteFood}`;
-console.log(iLoveFood);
+let southernUSStates = ['Tennesesee', 'Kentucky', 'Texas'];
+foods.set(southernUSStates, 'hot chicken');
+
+console.log(
+	foods.get('italian'),
+	foods.get(southernUSStates),
+	foods.size
+);
