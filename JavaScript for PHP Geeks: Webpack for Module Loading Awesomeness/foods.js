@@ -3,4 +3,4 @@ foods.add('gelato');
 foods.add('tortas');
 foods.add('gelato');
 
-module.exports = foods
+module.exports = foods;

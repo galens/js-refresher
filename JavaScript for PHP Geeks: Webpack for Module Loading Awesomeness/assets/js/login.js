@@ -1,8 +1,7 @@
 'use strict';
 
-const $ = require('jquery');
-const css = require('../css/login.css');
-console.log(css);
+import $ from 'jquery';
+import '../css/login.css';
 
 $(document).ready(function() {
     $('.js-recommended-login').on('click', '.js-show-login', function(e) {
@@ -17,8 +16,10 @@ $(document).ready(function() {
         $('.login-long-username-warning').remove();
 
         if ($usernameInput.val().length >= 20) {
-            const $warning = $('<div class="login-long-username-warning">This is a really long username - are you sure that is right?</div>');
-            $usernameInput.before($warning);
+            // use code splitting to lazily load this "chunk"
+            import('./Components/username_validation_error').then(username_validation_error => {
+                username_validation_error.default($usernameInput);
+            });
         }
     });
 });

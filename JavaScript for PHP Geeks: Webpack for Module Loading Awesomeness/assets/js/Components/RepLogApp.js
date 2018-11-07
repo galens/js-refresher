@@ -1,20 +1,25 @@
 'use strict';
 
-const Helper = require('./RepLogAppHelper');
-const $ = require('jquery');
-const swal = require('sweetalert2');
-require('sweetalert2/dist/sweetalert2.css')
+import Helper from './RepLogAppHelper';
+import $ from 'jquery';
+import swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.css';
+import Routing from './Routing';
+import random from 'lodash/random';
 
 let HelperInstances = new WeakMap();
 
 class RepLogApp {
-    constructor($wrapper) {
+    constructor($wrapper, initialRepLogs) {
         this.$wrapper = $wrapper;
         this.repLogs = [];
 
         HelperInstances.set(this, new Helper(this.repLogs));
 
-        this.loadRepLogs();
+        for (let repLog of initialRepLogs) {
+            this._addRow(repLog);
+        }
+        this._clearForm();
 
         this.$wrapper.on(
             'click',
@@ -40,16 +45,6 @@ class RepLogApp {
         return {
             newRepForm: '.js-new-rep-log-form'
         }
-    }
-
-    loadRepLogs() {
-        $.ajax({
-            url: Routing.generate('rep_log_list'),
-        }).then(data => {
-            for (let repLog of data.items) {
-                this._addRow(repLog);
-            }
-        })
     }
 
     updateTotalWeightLifted() {
@@ -179,6 +174,9 @@ class RepLogApp {
 
         const $form = this.$wrapper.find(RepLogApp._selectors.newRepForm);
         $form[0].reset();
+
+        // pre-fill with a random rep number
+        $form.find('[name="reps"]').val(random(1, 10));
     }
 
     _addRow(repLog) {
@@ -197,21 +195,20 @@ class RepLogApp {
     }
 }
 
-    
-    const rowTemplate = (repLog) => `
+const rowTemplate = (repLog) => `
 <tr data-weight="${repLog.totalWeightLifted}">
-    <td>${repLog.itemLabel}</td>
-    <td>${repLog.reps}</td>
-    <td>${repLog.totalWeightLifted}</td>
-    <td>
-        <a href="#"
-           class="js-delete-rep-log"
-           data-url="${repLog.links._self}"
-        >
-            <span class="fa fa-trash"></span>
-        </a>
-    </td>
+<td>${repLog.itemLabel}</td>
+<td>${repLog.reps}</td>
+<td>${repLog.totalWeightLifted}</td>
+<td>
+    <a href="#"
+       class="js-delete-rep-log"
+       data-url="${repLog.links._self}"
+    >
+        <span class="fa fa-trash"></span>
+    </a>
+</td>
 </tr>
 `;
 
-module.exports = RepLogApp;
+export default RepLogApp;
