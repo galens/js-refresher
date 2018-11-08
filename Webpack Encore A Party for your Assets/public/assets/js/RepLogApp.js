@@ -195,7 +195,6 @@ const Helper = require('./RepLogHelper');
     }
 
 
-
     const rowTemplate = (repLog) => `
 <tr data-weight="${repLog.totalWeightLifted}">
     <td>${repLog.itemLabel}</td>
