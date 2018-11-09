@@ -10,6 +10,8 @@ Encore
 
     // tells webpack to do stuff on RepLogApp.js, 
     .addEntry('rep_log', './public/assets/js/RepLogApp.js')
+
+    .enableBuildNotifications()
 ;
 
 // export the final configuration
