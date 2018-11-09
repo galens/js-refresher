@@ -1,1 +1,1 @@
-{"entrypoints":{"rep_log":{"js":["build/rep_log.js"]}}}
+{"entrypoints":{"rep_log":{"js":["build/rep_log.js"]},"login":{"js":["build/login.js"]},"layout":{"js":["build/layout.js"]}}}

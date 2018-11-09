@@ -8,10 +8,16 @@ Encore
     // the public path used by the web server to access the previous directory
     .setPublicPath('/build')
 
-    // tells webpack to do stuff on RepLogApp.js, 
-    .addEntry('rep_log', './public/assets/js/RepLogApp.js')
+    // will create public/build/rep_log.js
+    .addEntry('rep_log', './public/assets/js/rep_log.js')
+    .addEntry('login', './public/assets/js/login.js')
+    .addEntry('layout', './public/assets/js/layout.js')
 
     .enableBuildNotifications()
+
+    // whenever webpack finds a module that references an uninitialized global jquery variable
+    // webpack rewrites the code to require jquery
+    .autoProvidejQuery()
 ;
 
 // export the final configuration
