@@ -30,4 +30,4 @@ class Helper {
 }
 
 // used to give access to other files
-module.exports = Helper
+export default Helper;
