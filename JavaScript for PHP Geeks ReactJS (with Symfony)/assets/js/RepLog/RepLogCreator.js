@@ -5,16 +5,43 @@ export default class RepLogCreator extends Component {
 	constructor(props) {
 		super(props);
 
+		this.quantityInput = React.createRef();
+		this.itemSelect = React.createRef();
+
+		this.itemOptions = [
+            { id: 'cat', text: 'Cat' },
+            { id: 'fat_cat', text: 'Big Fat Cat' },
+            { id: 'laptop', text: 'My Laptop' },
+            { id: 'coffee_cup', text: 'Coffee Cup' },
+        ];
+
 		this.handleFormSubmit = this.handleFormSubmit.bind(this);
 	}
+
+
 	handleFormSubmit(event) {
 		event.preventDefault();  // needs to be first line in a handler function
-		const { onNewItemSubmit } = this.props;
+		const { onAddRepLog } = this.props;
 
-		console.log('i love when a good form submits!');
-		console.log(event.target.elements.namedItem('reps').value);
+		const quantityInput = this.quantityInput.current;
+		const itemSelect = this.itemSelect.current;
 
-		onNewItemSubmit('Big Fat Cat', event.target.elements.namedItem('reps').value);
+		if(quantityInput.value <= 0) {
+			// todo print some validation error
+
+			return;
+		}
+
+		//console.log('i love when a good form submits!');
+		//console.log(event.target.elements.namedItem('reps').value);
+
+		onAddRepLog(
+			itemSelect.options[itemSelect.selectedIndex].text,
+			quantityInput.value
+		);
+
+		quantityInput.value = '';
+		itemSelect.selectedIndex = 0;
 	}
 
 	render() {
@@ -27,14 +54,13 @@ export default class RepLogCreator extends Component {
 			            What did you lift?
 			        </label>
 			        <select id="rep_log_item"
-			                name="item"
+			                ref={this.itemSelect}
 			                required="required"
 			                className="form-control">
 			            <option value="">What did you lift?</option>
-			            <option value="cat">Cat</option>
-			            <option value="fat_cat">Big Fat Cat</option>
-			            <option value="laptop">My Laptop</option>
-			            <option value="coffee_cup">Coffee Cup</option>
+			            {this.itemOptions.map(option => {
+			            	return <option value={option.id} key={option.id}>{option.text}</option>
+			            })}
 			        </select>
 			    </div>
 			    {' '}
@@ -42,8 +68,10 @@ export default class RepLogCreator extends Component {
 			        <label className="sr-only control-label required" htmlFor="rep_log_reps">
 			            How many times?
 			        </label>
-			        <input type="number" id="rep_log_reps"
-			               name="reps" required="required"
+			        <input type="number" 
+			        	   id="rep_log_reps"
+			               ref={this.quantityInput} 
+			               required="required"
 			               placeholder="How many times?"
 			               className="form-control"/>
 			    </div>
@@ -55,6 +83,6 @@ export default class RepLogCreator extends Component {
 }
 
 RepLogCreator.propTypes = {
-	onNewItemSubmit: PropTypes.func.isRequired
+	onAddRepLog: PropTypes.func.isRequired
 
 };
