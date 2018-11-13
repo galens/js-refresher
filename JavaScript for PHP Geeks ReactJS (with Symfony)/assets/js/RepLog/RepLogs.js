@@ -62,11 +62,15 @@ export default function RepLogs(props) {
             </tfoot>
         </table>
 
+        <div className="row">
+        	<div className="col-md-6">
+
         <RepLogCreator
         	onAddRepLog={onAddRepLog}
         />
 
-        
+        	</div>
+        </div>
 
     </div>
 	);
