@@ -2,6 +2,7 @@ import React from 'react';
 import RepLogList from './RepLogList';
 import PropTypes from 'prop-types';
 import RepLogCreator from './RepLogCreator';
+//import RepLogCreator from './RepLogCreatorControlledComponents';
 
 function calculateTotalWeightLifted(repLogs) {
 	let total = 0;
@@ -21,58 +22,64 @@ export default function RepLogs(props) {
 		highlightedRowId, 
 		onRowClick, 
 		repLogs, 
-		onAddRepLog 
+		onAddRepLog,
+		numberOfHearts,
+		onHeartChange
 	} = props;
 
 
 	let heart = '';
 	if(withHeart) {
-		heart = <span>h</span>;
+		heart = <span>{'h'.repeat(numberOfHearts)}</span>;
 	}
-
-
-
-	
 
 	return (
 		<div className="col-md-7">
-        <h2>Lift History! {heart}</h2>
+	        <h2>Lift History! {heart}</h2>
 
-        <table className="table table-striped">
-            <thead>
-            <tr>
-                <th>What</th>
-                <th>How many times?</th>
-                <th>Weight</th>
-                <th>&nbsp;</th>
-            </tr>
-            </thead>
-            <RepLogList 
-            	highlightedRowId={highlightedRowId}
-            	onRowClick={onRowClick}
-            	repLogs={repLogs}
-            />
-            <tfoot>
-                <tr>
-                    <td>&nbsp;</td>
-                    <th>Total</th>
-                    <th>{calculateTotalWeightFancier(repLogs)}</th>
-                    <td>&nbsp;</td>
-                </tr>
-            </tfoot>
-        </table>
+	        <input 
+	        	type="range" 
+	        	value={numberOfHearts}
+	        	onChange={(e) => {
+	        		onHeartChange(+e.target.value)
+	        	}}
+	        />
 
-        <div className="row">
-        	<div className="col-md-6">
+	        <table className="table table-striped">
+	            <thead>
+	            <tr>
+	                <th>What</th>
+	                <th>How many times?</th>
+	                <th>Weight</th>
+	                <th>&nbsp;</th>
+	            </tr>
+	            </thead>
+	            <RepLogList 
+	            	highlightedRowId={highlightedRowId}
+	            	onRowClick={onRowClick}
+	            	repLogs={repLogs}
+	            />
+	            <tfoot>
+	                <tr>
+	                    <td>&nbsp;</td>
+	                    <th>Total</th>
+	                    <th>{calculateTotalWeightFancier(repLogs)}</th>
+	                    <td>&nbsp;</td>
+	                </tr>
+	            </tfoot>
+	        </table>
 
-        <RepLogCreator
-        	onAddRepLog={onAddRepLog}
-        />
+	        <div className="row">
+	        	<div className="col-md-6">
 
-        	</div>
-        </div>
+	        <RepLogCreator
+	        	onAddRepLog={onAddRepLog}
+	        />
 
-    </div>
+	        	</div>
+	        </div>
+
+    	</div>
 	);
 }
 
@@ -81,5 +88,7 @@ RepLogs.propTypes = {
 	highlightedRowId: PropTypes.any,
 	onRowClick: PropTypes.func.isRequired,
 	onAddRepLog: PropTypes.func.isRequired,
-	repLogs: PropTypes.array.isRequired
+	onHeartChange: PropTypes.func.isRequired,
+	repLogs: PropTypes.array.isRequired,
+	numberOfHearts: PropTypes.number.isRequired
 };
