@@ -17,6 +17,8 @@ export default class RepLogApp extends Component {
 			successMessage: '',
 		};
 
+        this.successMessageTimeoutHandle = 0;
+
 		this.handleRowClick = this.handleRowClick.bind(this);
 		this.handleAddRepLog = this.handleAddRepLog.bind(this);
 		this.handleHeartChange = this.handleHeartChange.bind(this);
@@ -33,6 +35,10 @@ export default class RepLogApp extends Component {
 				});
 			});
 	}
+
+    componentWillUnmount() {
+        clearTimeout(this.successMessageTimeoutHandle);
+    }
 
 	handleRowClick(repLogId) {
 		this.setState({highlightedRowId: repLogId});
@@ -56,11 +62,27 @@ export default class RepLogApp extends Component {
 					return {
 						repLogs: newRepLogs,
 						isSavingNewRepLog: false,
-						successMessage: 'Rep Log Saved!'
 					};
-				})
+				});
+
+                this.setSuccessMessage('Rep Log Saved!');
 			});
 	}
+
+    setSuccessMessage(message) {
+        this.setState({
+            successMessage: message
+        });
+
+        clearTimeout(this.successMessageTimeoutHandle);
+        this.successMessageTimeoutHandle = setTimeout(() => {
+            this.setState({
+                successMessage: ''
+            });
+
+            this.successMessageTimeoutHandle = 0;
+        }, 3000);
+    }
 
 	handleHeartChange(heartCount) {
 		this.setState({
@@ -69,15 +91,30 @@ export default class RepLogApp extends Component {
 	}
 
 	handleDeleteRepLog(id) {
-		deleteRepLog(id);
+        this.setState((prevState) => {
+            return {
+                repLogs: prevState.repLogs.map(repLog => {
+                    if(repLog.id !== id) {
+                        return repLog;
+                    }
 
-		// remove the repo log without mutating state
-		// filter returns a new array
-		this.setState((prevState) => {
-			return {
-				repLogs: prevState.repLogs.filter(repLog => repLog.id !== id)
-			}
-		});
+                    return Object.assign({}, repLog, {isDeleting: true});
+                })
+            }
+        });
+
+		deleteRepLog(id)
+            .then(() => {
+                // remove the repo log without mutating state
+                // filter returns a new array
+                this.setState((prevState) => {
+                    return {
+                        repLogs: prevState.repLogs.filter(repLog => repLog.id !== id)
+                    }
+                });
+
+                this.setSuccessMessage('Item was Un-lifted!');
+            });
 	}
 
 	render() {
