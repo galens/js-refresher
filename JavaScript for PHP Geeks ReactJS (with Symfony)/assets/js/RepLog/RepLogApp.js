@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import RepLogs from './RepLogs';
 import PropTypes from 'prop-types';
 import uuid from 'uuid/v4';
+import { getRepLogs, deleteRepLog, createRepLog } from '../api/rep_log_api';
 
 export default class RepLogApp extends Component {
 	constructor(props) {
@@ -9,12 +10,11 @@ export default class RepLogApp extends Component {
 
 		this.state = {
 			highlightedRowId: null,
-			repLogs: [
-				{ id: uuid(), reps: 25, itemLabel: 'My Laptop', totalWeightLifted: 112.5 },
-		        { id: uuid(), reps: 10, itemLabel: 'Big Fat Cat', totalWeightLifted: 180 },
-		        { id: uuid(), reps: 4, itemLabel: 'Big Fat Cat', totalWeightLifted: 72 }
-			],
+			repLogs: [],
 			numberOfHearts: 1,
+			isLoaded: false,
+			isSavingNewRepLog: false,
+			successMessage: '',
 		};
 
 		this.handleRowClick = this.handleRowClick.bind(this);
@@ -23,23 +23,43 @@ export default class RepLogApp extends Component {
 		this.handleDeleteRepLog = this.handleDeleteRepLog.bind(this);
 	}
 
+	// best place to put ajax calls when needed, fired after dom is rendered
+	componentDidMount() {
+		getRepLogs()
+			.then((data) => {
+				this.setState({
+					repLogs: data,
+					isLoaded: true
+				});
+			});
+	}
+
 	handleRowClick(repLogId) {
 		this.setState({highlightedRowId: repLogId});
 	}
 
-	handleAddRepLog(itemLabel, reps) {
+	handleAddRepLog(item, reps) {
 		const newRep = {
-			id: uuid(),
 			reps: reps,
-			itemLabel: itemLabel,
-			totalWeightLifted: Math.floor(Math.random() * 50)
+			item: item,
 		};
 
-		this.setState(prevState => {
-			const newRepLogs = [...prevState.repLogs, newRep];
-
-			return {repLogs: newRepLogs}
+		this.setState({
+			isSavingNewRepLog: true
 		});
+
+		createRepLog(newRep)
+			.then(repLog => {
+				this.setState(prevState => {
+					const newRepLogs = [...prevState.repLogs, repLog];
+
+					return {
+						repLogs: newRepLogs,
+						isSavingNewRepLog: false,
+						successMessage: 'Rep Log Saved!'
+					};
+				})
+			});
 	}
 
 	handleHeartChange(heartCount) {
@@ -49,6 +69,8 @@ export default class RepLogApp extends Component {
 	}
 
 	handleDeleteRepLog(id) {
+		deleteRepLog(id);
+
 		// remove the repo log without mutating state
 		// filter returns a new array
 		this.setState((prevState) => {

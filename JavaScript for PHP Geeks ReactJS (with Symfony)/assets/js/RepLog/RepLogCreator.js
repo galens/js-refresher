@@ -42,7 +42,7 @@ export default class RepLogCreator extends Component {
 		//console.log(event.target.elements.namedItem('reps').value);
 
 		onAddRepLog(
-			itemSelect.options[itemSelect.selectedIndex].text,
+			itemSelect.options[itemSelect.selectedIndex].value,
 			quantityInput.value
 		);
 
